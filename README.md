@@ -7,7 +7,8 @@ Content follows Sommerville, *Software Engineering*, 10th edition, chapter 8.
 **View it:** https://abhishekbarali.github.io/tdd-presentation/
 
 Everything is in one file, `index.html`. No build step, no dependencies.
-Open it in any browser or double click it.
+Open it in any browser or double click it. The diagrams are inline SVG, drawn in
+the file itself, so there are no image files to carry around.
 
 ## Controls
 

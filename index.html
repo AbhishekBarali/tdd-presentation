@@ -210,6 +210,35 @@
 
   .split{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start}
 
+  /* ---------- figures ---------- */
+  .with-figure{display:grid;grid-template-columns:1fr auto;gap:52px;align-items:center}
+  figure{margin:0}
+  figcaption{
+    margin-top:16px;
+    font-size:17px;
+    color:var(--ink-faint);
+    max-width:32ch;
+  }
+
+  .fig-loop{width:368px;height:368px;display:block;overflow:visible}
+  .fig-loop text{font-family:var(--display);font-size:27px;fill:var(--ink)}
+  .fig-loop .red{fill:var(--accent)}
+  .fig-loop .mid{font-family:var(--sans);font-size:16px;fill:var(--ink-faint)}
+
+  .fig-mark{
+    position:absolute;right:104px;top:196px;
+    width:344px;height:344px;
+    opacity:.16;
+    pointer-events:none;
+  }
+
+  .fig-run{width:566px;height:76px;display:block;margin-top:30px}
+  .fig-run .t1{font-family:var(--sans);font-size:20px;fill:var(--ink)}
+  .fig-run .t2{font-family:var(--sans);font-size:16px;fill:var(--ink-faint)}
+
+  .fig-stack{width:330px;height:250px;display:block}
+  .fig-stack text{font-family:var(--sans);font-size:15px;fill:var(--ink-faint)}
+
   /* ---------- chrome ---------- */
   .counter{
     position:absolute;right:92px;bottom:44px;
@@ -276,6 +305,16 @@
 
     <!-- 1 -->
     <section class="slide title-slide is-active">
+      <svg class="fig-mark" viewBox="0 0 380 380" aria-hidden="true">
+        <g fill="none" stroke="var(--ink)" stroke-width="2">
+          <path d="M226.5,77.8 A118,118 0 0 1 305.4,214.5"/>
+          <path d="M268.9,277.7 A118,118 0 0 1 111.0,277.7"/>
+          <path d="M74.6,214.5 A118,118 0 0 1 153.5,77.8"/>
+        </g>
+        <circle cx="190" cy="72" r="9" fill="var(--accent)"/>
+        <circle cx="292" cy="249" r="9" fill="var(--ink)"/>
+        <circle cx="88" cy="249" r="9" fill="var(--ink)"/>
+      </svg>
       <h1>Test-Driven Development</h1>
       <p class="title-sub">Unit 8.2 · Software Testing</p>
       <div class="title-meta">
@@ -293,13 +332,35 @@
     <!-- 3 -->
     <section class="slide">
       <h2>The cycle</h2>
-      <ol class="steps">
-        <li>Pick one small piece of work<span>Something you can write in a few lines.</span></li>
-        <li>Write a test for it<span>An automatic test, run by a tool, not by hand.</span></li>
-        <li>Run the test and watch it fail<span>The code is not written yet, so it must fail.</span></li>
-        <li>Write just enough code to pass<span>Nothing extra. Only what the test asks for.</span></li>
-        <li>Run every test again, then take the next piece<span>Old tests must still pass before you move on.</span></li>
-      </ol>
+      <div class="with-figure">
+        <ol class="steps">
+          <li>Pick one small piece of work<span>Something you can write in a few lines.</span></li>
+          <li>Write a test for it<span>An automatic test, run by a tool, not by hand.</span></li>
+          <li>Run the test and watch it fail<span>The code is not written yet, so it must fail.</span></li>
+          <li>Write just enough code to pass<span>Nothing extra. Only what the test asks for.</span></li>
+          <li>Run every test again, then take the next piece<span>Old tests must still pass before you move on.</span></li>
+        </ol>
+        <svg class="fig-loop" viewBox="0 0 380 380" role="img" aria-label="A loop running from red to green to refactor and back to red">
+          <defs>
+            <marker id="arrow" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+              <path d="M0,0 L6,3 L0,6 z" fill="var(--ink-faint)"/>
+            </marker>
+          </defs>
+          <g fill="none" stroke="var(--ink-faint)" stroke-width="1.6" marker-end="url(#arrow)">
+            <path d="M226.5,77.8 A118,118 0 0 1 305.4,214.5"/>
+            <path d="M268.9,277.7 A118,118 0 0 1 111.0,277.7"/>
+            <path d="M74.6,214.5 A118,118 0 0 1 153.5,77.8"/>
+          </g>
+          <circle cx="190" cy="72" r="9" fill="var(--accent)"/>
+          <circle cx="292" cy="249" r="9" fill="var(--ink)"/>
+          <circle cx="88" cy="249" r="9" fill="var(--ink)"/>
+          <text class="red" x="190" y="44" text-anchor="middle">Red</text>
+          <text x="312" y="257" text-anchor="start">Green</text>
+          <text x="68" y="257" text-anchor="end">Refactor</text>
+          <text class="mid" x="190" y="184" text-anchor="middle">one small step,</text>
+          <text class="mid" x="190" y="208" text-anchor="middle">then around again</text>
+        </svg>
+      </div>
     </section>
 
     <!-- 4 -->
@@ -340,6 +401,25 @@
         </div>
       </div>
       <p class="code-note">Run the test before writing <code style="font-family:var(--mono);font-size:21px">discount</code> and it fails. Write those two lines and it passes. That pass is now permanent: it runs again every time anyone touches this code.</p>
+      <svg class="fig-run" viewBox="0 0 566 76" role="img" aria-label="The test fails first, then passes after the code is written">
+        <defs>
+          <marker id="arrow2" markerWidth="9" markerHeight="9" refX="6" refY="3" orient="auto">
+            <path d="M0,0 L6,3 L0,6 z" fill="var(--ink-faint)"/>
+          </marker>
+        </defs>
+        <circle cx="27" cy="34" r="20" fill="none" stroke="var(--accent)" stroke-width="1.6"/>
+        <g stroke="var(--accent)" stroke-width="2.4" stroke-linecap="round">
+          <path d="M19,26 L35,42"/>
+          <path d="M35,26 L19,42"/>
+        </g>
+        <text class="t1" x="62" y="30">The test fails</text>
+        <text class="t2" x="62" y="53">the code does not exist yet</text>
+        <path d="M282,34 L318,34" fill="none" stroke="var(--ink-faint)" stroke-width="1.6" marker-end="url(#arrow2)"/>
+        <circle cx="360" cy="34" r="20" fill="none" stroke="var(--ink)" stroke-width="1.6"/>
+        <path d="M351,34 L358,41 L371,26" fill="none" stroke="var(--ink)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"/>
+        <text class="t1" x="395" y="30">The test passes</text>
+        <text class="t2" x="395" y="53">two lines of code later</text>
+      </svg>
     </section>
 
     <!-- 6 -->
@@ -351,12 +431,45 @@
     <!-- 7 -->
     <section class="slide">
       <h2>What you get out of it</h2>
-      <ul class="marks">
-        <li>Every line of code has a test<span>You only write code to pass a test, so nothing is left untested.</span></li>
-        <li>A safety net that keeps growing<span>Every old test runs again, so a new change cannot quietly break old work.</span></li>
-        <li>Bugs are easy to find<span>A test just broke, and you only changed a few lines. The bug is in those lines.</span></li>
-        <li>The tests explain the code<span>Reading the tests shows exactly what the code is supposed to do.</span></li>
-      </ul>
+      <div class="with-figure">
+        <ul class="marks">
+          <li>Every line of code has a test<span>You only write code to pass a test, so nothing is left untested.</span></li>
+          <li>A safety net that keeps growing<span>Every old test runs again, so a new change cannot quietly break old work.</span></li>
+          <li>Bugs are easy to find<span>A test just broke, and you only changed a few lines. The bug is in those lines.</span></li>
+          <li>The tests explain the code<span>Reading the tests shows exactly what the code is supposed to do.</span></li>
+        </ul>
+        <figure>
+          <svg class="fig-stack" viewBox="0 0 330 250" role="img" aria-label="Each step adds one test and keeps all the earlier ones">
+            <g stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" fill="none">
+              <text x="0" y="30">step 1</text>
+              <path stroke="var(--accent)" d="M74,24 l6,7 l11,-15"/>
+
+              <text x="0" y="76">step 2</text>
+              <path stroke="var(--ink-faint)" d="M74,70 l6,7 l11,-15"/>
+              <path stroke="var(--accent)" d="M110,70 l6,7 l11,-15"/>
+
+              <text x="0" y="122">step 3</text>
+              <path stroke="var(--ink-faint)" d="M74,116 l6,7 l11,-15"/>
+              <path stroke="var(--ink-faint)" d="M110,116 l6,7 l11,-15"/>
+              <path stroke="var(--accent)" d="M146,116 l6,7 l11,-15"/>
+
+              <text x="0" y="168">step 4</text>
+              <path stroke="var(--ink-faint)" d="M74,162 l6,7 l11,-15"/>
+              <path stroke="var(--ink-faint)" d="M110,162 l6,7 l11,-15"/>
+              <path stroke="var(--ink-faint)" d="M146,162 l6,7 l11,-15"/>
+              <path stroke="var(--accent)" d="M182,162 l6,7 l11,-15"/>
+
+              <text x="0" y="214">step 5</text>
+              <path stroke="var(--ink-faint)" d="M74,208 l6,7 l11,-15"/>
+              <path stroke="var(--ink-faint)" d="M110,208 l6,7 l11,-15"/>
+              <path stroke="var(--ink-faint)" d="M146,208 l6,7 l11,-15"/>
+              <path stroke="var(--ink-faint)" d="M182,208 l6,7 l11,-15"/>
+              <path stroke="var(--accent)" d="M218,208 l6,7 l11,-15"/>
+            </g>
+          </svg>
+          <figcaption>Red is the new test. The grey ones are old tests, still running on every step.</figcaption>
+        </figure>
+      </div>
     </section>
 
     <!-- 8 -->
