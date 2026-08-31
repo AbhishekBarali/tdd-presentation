@@ -1,0 +1,476 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Test-Driven Development — Unit 8.2, Software Engineering</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    --paper:#f7f5f0;
+    --ink:#191917;
+    --ink-soft:#5b5750;
+    --ink-faint:#8b867c;
+    --accent:#a8452c;
+    --rule:rgba(25,25,23,.14);
+    --stage-w:1280px;
+    --stage-h:720px;
+    --display:'Instrument Serif',Georgia,'Times New Roman',serif;
+    --sans:'Inter',system-ui,-apple-system,'Segoe UI',sans-serif;
+    --mono:'JetBrains Mono',ui-monospace,Menlo,Consolas,monospace;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+
+  html,body{height:100%;overflow:hidden;background:#e8e5de}
+  body{
+    font-family:var(--sans);
+    color:var(--ink);
+    -webkit-font-smoothing:antialiased;
+    display:grid;
+    place-items:center;
+  }
+
+  ::selection{background:rgba(168,69,44,.18);color:var(--ink)}
+  :focus-visible{outline:2px solid var(--accent);outline-offset:3px;border-radius:2px}
+
+  /* ---------- stage: fixed 16:9 canvas, scaled to the window ---------- */
+  #viewport{
+    width:var(--stage-w);
+    height:var(--stage-h);
+    transform-origin:center center;
+    position:relative;
+  }
+  #stage{
+    position:absolute;inset:0;
+    background:var(--paper);
+    box-shadow:0 24px 70px -24px rgba(25,25,23,.35);
+    overflow:hidden;
+  }
+
+  .slide{
+    position:absolute;inset:0;
+    padding:76px 92px 68px;
+    display:none;
+    flex-direction:column;
+  }
+  .slide.is-active{display:flex}
+
+  /* one authored entrance, exponential ease-out */
+  .slide.is-active > *{
+    animation:rise .62s cubic-bezier(.16,1,.3,1) both;
+  }
+  .slide.is-active > *:nth-child(2){animation-delay:.07s}
+  .slide.is-active > *:nth-child(3){animation-delay:.13s}
+  .slide.is-active > *:nth-child(4){animation-delay:.19s}
+  @keyframes rise{
+    from{opacity:0;transform:translateY(14px)}
+    to{opacity:1;transform:none}
+  }
+  @media (prefers-reduced-motion:reduce){
+    .slide.is-active > *{animation:none}
+  }
+
+  /* ---------- type ---------- */
+  h1{
+    font-family:var(--display);
+    font-weight:400;
+    font-size:104px;
+    line-height:.95;
+    letter-spacing:-.02em;
+    text-wrap:balance;
+  }
+  h2{
+    font-family:var(--display);
+    font-weight:400;
+    font-size:60px;
+    line-height:1.02;
+    letter-spacing:-.015em;
+    text-wrap:balance;
+    margin-bottom:34px;
+  }
+  p,li{font-size:25px;line-height:1.5;color:var(--ink-soft)}
+  strong{color:var(--ink);font-weight:600}
+
+  /* ---------- title slide ---------- */
+  .title-slide{justify-content:center;gap:0}
+  .title-slide h1{max-width:16ch}
+  .title-sub{
+    margin-top:30px;
+    font-size:27px;
+    color:var(--ink-soft);
+  }
+  .title-meta{
+    position:absolute;
+    left:92px;right:92px;bottom:60px;
+    padding-top:20px;
+    border-top:1px solid var(--rule);
+    display:flex;justify-content:space-between;
+    font-size:17px;color:var(--ink-faint);
+  }
+
+  /* ---------- statement slide ---------- */
+  .statement{justify-content:center}
+  .statement .big{
+    font-family:var(--display);
+    color:var(--ink);
+    font-size:74px;
+    line-height:1.06;
+    letter-spacing:-.02em;
+    max-width:24ch;
+  }
+  .statement .under{
+    margin-top:38px;
+    max-width:38ch;
+    font-size:26px;
+  }
+
+  /* ---------- numbered steps ---------- */
+  ol.steps{list-style:none;counter-reset:s;display:grid;gap:15px;max-width:62ch}
+  ol.steps li{
+    counter-increment:s;
+    display:grid;
+    grid-template-columns:52px 1fr;
+    align-items:baseline;
+    font-size:25px;
+    color:var(--ink);
+  }
+  ol.steps li::before{
+    content:counter(s);
+    font-family:var(--display);
+    font-size:34px;
+    color:var(--accent);
+    line-height:1;
+  }
+  ol.steps li span{grid-column:2;color:var(--ink-soft);font-size:19px;display:block;margin-top:3px}
+
+  /* ---------- phase band ---------- */
+  .phases{display:grid;grid-template-columns:repeat(3,1fr);gap:0;margin-top:8px}
+  .phase{padding:30px 34px 30px 0;border-top:2px solid var(--ink)}
+  .phase + .phase{padding-left:34px;border-left:1px solid var(--rule)}
+  .phase h3{
+    font-family:var(--display);
+    font-weight:400;
+    font-size:42px;
+    letter-spacing:-.01em;
+    margin-bottom:12px;
+  }
+  .phase:nth-child(1) h3{color:var(--accent)}
+  .phase p{font-size:22px}
+  .phases-note{margin-top:34px;font-size:23px}
+
+  /* ---------- code ---------- */
+  .code-cols{display:grid;grid-template-columns:1fr 1fr;gap:44px;align-items:start}
+  .code-label{
+    font-size:18px;
+    font-weight:600;
+    color:var(--ink);
+    padding-bottom:10px;
+    margin-bottom:16px;
+    border-bottom:1px solid var(--rule);
+  }
+  pre{
+    font-family:var(--mono);
+    font-variant-ligatures:none;
+    font-size:20px;
+    line-height:1.62;
+    color:var(--ink);
+    white-space:pre;
+  }
+  pre .c{color:var(--ink-faint)}
+  pre .k{color:var(--accent)}
+  .code-note{margin-top:32px;font-size:23px;max-width:60ch}
+
+  /* ---------- two column compare ---------- */
+  .compare{display:grid;grid-template-columns:1fr 1fr;gap:0;margin-top:4px}
+  .compare > div{padding:26px 34px 0 0}
+  .compare > div + div{padding-left:34px;border-left:1px solid var(--rule)}
+  .compare h3{
+    font-size:20px;font-weight:600;letter-spacing:.01em;
+    margin-bottom:20px;color:var(--ink);
+  }
+  .compare h3.mark{color:var(--accent)}
+  .compare ul{list-style:none;display:grid;gap:14px}
+  .compare li{font-size:22px;padding-left:22px;position:relative}
+  .compare li::before{
+    content:'';position:absolute;left:0;top:14px;
+    width:9px;height:1px;background:var(--ink-faint);
+  }
+
+  /* ---------- plain marked list ---------- */
+  ul.marks{list-style:none;display:grid;gap:18px;max-width:54ch}
+  ul.marks li{padding-left:30px;position:relative;font-size:25px;color:var(--ink)}
+  ul.marks li::before{
+    content:'';position:absolute;left:0;top:16px;
+    width:14px;height:1px;background:var(--accent);
+  }
+  ul.marks li span{display:block;font-size:20px;color:var(--ink-soft);margin-top:4px}
+
+  .split{display:grid;grid-template-columns:1fr 1fr;gap:56px;align-items:start}
+
+  /* ---------- chrome ---------- */
+  .counter{
+    position:absolute;right:92px;bottom:44px;
+    font-size:15px;color:var(--ink-faint);
+    font-variant-numeric:tabular-nums;
+  }
+  .runner{
+    position:absolute;left:92px;bottom:44px;
+    font-size:15px;color:var(--ink-faint);
+  }
+  #stage.at-title .runner,#stage.at-title .counter{display:none}
+  #bar{
+    position:absolute;left:0;bottom:0;height:3px;
+    background:var(--accent);
+    transition:width .42s cubic-bezier(.16,1,.3,1);
+  }
+
+  #nav{
+    position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+    display:flex;gap:8px;align-items:center;
+    background:rgba(247,245,240,.92);
+    border:1px solid var(--rule);
+    border-radius:999px;
+    padding:6px 8px;
+    opacity:.28;transition:opacity .3s ease;
+  }
+  #nav:hover{opacity:1}
+  #nav button{
+    font:inherit;font-size:15px;
+    background:none;border:none;color:var(--ink);
+    padding:6px 14px;border-radius:999px;cursor:pointer;
+    transition:background .18s ease;
+  }
+  #nav button:hover{background:rgba(25,25,23,.07)}
+  #hint{
+    position:fixed;top:14px;left:50%;transform:translateX(-50%);
+    font-size:14px;color:#8b867c;
+    opacity:.9;transition:opacity .5s ease;
+  }
+  #hint.gone{opacity:0}
+
+  /* ---------- print / PDF ---------- */
+  @media print{
+    @page{size:1280px 720px;margin:0}
+    html,body{overflow:visible;background:#fff;display:block}
+    #viewport{transform:none!important;width:1280px;height:auto}
+    #stage{position:static;box-shadow:none;height:auto}
+    .slide{
+      display:flex!important;position:relative;
+      width:1280px;height:720px;
+      page-break-after:always;
+    }
+    .slide.is-active > *{animation:none}
+    #nav,#hint,#bar{display:none}
+  }
+</style>
+</head>
+<body>
+
+<div id="hint">Arrow keys or space to move · F for fullscreen</div>
+
+<div id="viewport">
+  <div id="stage">
+
+    <!-- 1 -->
+    <section class="slide title-slide is-active">
+      <h1>Test-Driven Development</h1>
+      <p class="title-sub">Unit 8.2 · Software Testing</p>
+      <div class="title-meta">
+        <span>Software Engineering · CSC364 · Semester VI</span>
+        <span>Sommerville, Software Engineering, 10th ed.</span>
+      </div>
+    </section>
+
+    <!-- 2 -->
+    <section class="slide statement">
+      <p class="big">Write the test first.<br>Then write the code<br>that passes it.</p>
+      <p class="under">That is the whole idea. Testing is not a step at the end. The test and the code grow together, a few lines at a time.</p>
+    </section>
+
+    <!-- 3 -->
+    <section class="slide">
+      <h2>The cycle</h2>
+      <ol class="steps">
+        <li>Pick one small piece of work<span>Something you can write in a few lines.</span></li>
+        <li>Write a test for it<span>An automatic test, run by a tool, not by hand.</span></li>
+        <li>Run the test and watch it fail<span>The code is not written yet, so it must fail.</span></li>
+        <li>Write just enough code to pass<span>Nothing extra. Only what the test asks for.</span></li>
+        <li>Run every test again, then take the next piece<span>Old tests must still pass before you move on.</span></li>
+      </ol>
+    </section>
+
+    <!-- 4 -->
+    <section class="slide">
+      <h2>Three words to remember it by</h2>
+      <div class="phases">
+        <div class="phase">
+          <h3>Red</h3>
+          <p>The new test fails. Good. It proves the test really checks something.</p>
+        </div>
+        <div class="phase">
+          <h3>Green</h3>
+          <p>You write the simplest code that makes the test pass.</p>
+        </div>
+        <div class="phase">
+          <h3>Refactor</h3>
+          <p>You tidy the code up. The tests tell you if you broke anything.</p>
+        </div>
+      </div>
+      <p class="phases-note">Then you go around again. Each loop is minutes long, not days.</p>
+    </section>
+
+    <!-- 5 -->
+    <section class="slide">
+      <h2>A small example</h2>
+      <div class="code-cols">
+        <div>
+          <div class="code-label">Step 1 — the test, written first</div>
+<pre><span class="c"># a 10% discount on any price</span>
+<span class="k">def</span> test_discount():
+    <span class="k">assert</span> discount(1000) == 100
+    <span class="k">assert</span> discount(0) == 0</pre>
+        </div>
+        <div>
+          <div class="code-label">Step 2 — the code, written after</div>
+<pre><span class="k">def</span> discount(price):
+    <span class="k">return</span> price * 0.10</pre>
+        </div>
+      </div>
+      <p class="code-note">Run the test before writing <code style="font-family:var(--mono);font-size:21px">discount</code> and it fails. Write those two lines and it passes. That pass is now permanent: it runs again every time anyone touches this code.</p>
+    </section>
+
+    <!-- 6 -->
+    <section class="slide statement">
+      <p class="big">A test that has never failed is a test you cannot trust.</p>
+      <p class="under">If a brand new test passes straight away, either the work was already done, or the test is checking nothing. So you always watch it fail once, on purpose.</p>
+    </section>
+
+    <!-- 7 -->
+    <section class="slide">
+      <h2>What you get out of it</h2>
+      <ul class="marks">
+        <li>Every line of code has a test<span>You only write code to pass a test, so nothing is left untested.</span></li>
+        <li>A safety net that keeps growing<span>Every old test runs again, so a new change cannot quietly break old work.</span></li>
+        <li>Bugs are easy to find<span>A test just broke, and you only changed a few lines. The bug is in those lines.</span></li>
+        <li>The tests explain the code<span>Reading the tests shows exactly what the code is supposed to do.</span></li>
+      </ul>
+    </section>
+
+    <!-- 8 -->
+    <section class="slide">
+      <h2>Where it does not help much</h2>
+      <div class="split">
+        <ul class="marks">
+          <li>Screens and visual design<span>Hard to write an automatic test for "does this look right".</span></li>
+          <li>Big, tangled old systems<span>You cannot test one small piece on its own.</span></li>
+        </ul>
+        <ul class="marks">
+          <li>Systems with many things running at once<span>The same test can pass today and fail tomorrow.</span></li>
+          <li>It only checks what you thought of<span>So you still need system testing and real users.</span></li>
+        </ul>
+      </div>
+    </section>
+
+    <!-- 9 -->
+    <section class="slide">
+      <h2>Testing at the end vs. testing first</h2>
+      <div class="compare">
+        <div>
+          <h3>Testing at the end</h3>
+          <ul>
+            <li>Code first, tests later, if there is time</li>
+            <li>Bugs show up in a pile, far from where they were made</li>
+            <li>Hard to say how much of the code is really tested</li>
+            <li>Changing old code feels risky</li>
+          </ul>
+        </div>
+        <div>
+          <h3 class="mark">Testing first</h3>
+          <ul>
+            <li>One test, one small piece of code, over and over</li>
+            <li>Bugs show up within minutes of being made</li>
+            <li>Coverage comes for free</li>
+            <li>Changing old code is safe, the tests will shout</li>
+          </ul>
+        </div>
+      </div>
+    </section>
+
+    <!-- 10 -->
+    <section class="slide">
+      <h2>Remember this</h2>
+      <ul class="marks">
+        <li>Test first, code second, in very small steps.</li>
+        <li>Red, green, refactor.</li>
+        <li>It came from agile methods, and it needs an automatic test tool such as JUnit.</li>
+        <li>It gives coverage, a safety net, easy debugging and living documentation.</li>
+        <li>It replaces none of your system testing or user testing.</li>
+      </ul>
+    </section>
+
+    <div id="bar"></div>
+    <div class="runner">Test-Driven Development</div>
+    <div class="counter"><span id="cur">1</span> / <span id="tot">10</span></div>
+  </div>
+</div>
+
+<div id="nav">
+  <button id="prev" aria-label="Previous slide">Back</button>
+  <button id="next" aria-label="Next slide">Next</button>
+  <button id="fs" aria-label="Toggle fullscreen">Full screen</button>
+</div>
+
+<script>
+(function(){
+  var slides = Array.prototype.slice.call(document.querySelectorAll('.slide'));
+  var stageW = 1280, stageH = 720;
+  var i = 0;
+
+  document.getElementById('tot').textContent = slides.length;
+
+  function fit(){
+    var pad = 40;
+    var k = Math.min((innerWidth - pad) / stageW, (innerHeight - pad) / stageH);
+    document.getElementById('viewport').style.transform = 'scale(' + k + ')';
+  }
+
+  function show(n, push){
+    i = Math.max(0, Math.min(slides.length - 1, n));
+    slides.forEach(function(s, idx){ s.classList.toggle('is-active', idx === i); });
+    document.getElementById('stage').classList.toggle('at-title', i === 0);
+    document.getElementById('cur').textContent = i + 1;
+    document.getElementById('bar').style.width =
+      ((i + 1) / slides.length * 100) + '%';
+    if (push !== false) history.replaceState(null, '', '#' + (i + 1));
+  }
+
+  document.getElementById('next').onclick = function(){ show(i + 1); };
+  document.getElementById('prev').onclick = function(){ show(i - 1); };
+  document.getElementById('fs').onclick = function(){
+    if (document.fullscreenElement) document.exitFullscreen();
+    else document.documentElement.requestFullscreen();
+  };
+
+  addEventListener('keydown', function(e){
+    var k = e.key;
+    if (k === 'ArrowRight' || k === 'PageDown' || k === ' ' || k === 'Enter'){ e.preventDefault(); show(i + 1); }
+    else if (k === 'ArrowLeft' || k === 'PageUp' || k === 'Backspace'){ e.preventDefault(); show(i - 1); }
+    else if (k === 'Home'){ show(0); }
+    else if (k === 'End'){ show(slides.length - 1); }
+    else if (k === 'f' || k === 'F'){ document.getElementById('fs').click(); }
+  });
+
+  addEventListener('resize', fit);
+  fit();
+
+  var start = parseInt((location.hash || '').replace('#', ''), 10);
+  show(isNaN(start) ? 0 : start - 1, false);
+
+  setTimeout(function(){ document.getElementById('hint').classList.add('gone'); }, 5000);
+})();
+</script>
+</body>
+</html>
