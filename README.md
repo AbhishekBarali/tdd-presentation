@@ -22,6 +22,26 @@ the file itself, so there are no image files to carry around.
 The slide area is a fixed 16:9 canvas that scales to the window, so the layout
 holds at any size. `Ctrl+P` prints one slide per page if you want a PDF.
 
+## PowerPoint version
+
+`tdd-presentation.pptx` is the same ten slides as a native PowerPoint file, for
+when the room has a projector laptop and no browser you trust. It is not a set
+of screenshots: every slide is real text boxes and real shapes, so you can edit
+it in PowerPoint, Keynote or LibreOffice Impress.
+
+It is generated from the design of `index.html` by `tools/build_pptx.py`, so
+`index.html` stays the source of truth. To rebuild it after editing the slides:
+
+```
+pip install python-pptx
+python tools/build_pptx.py
+```
+
+Two differences from the web version, both deliberate. The fonts fall back to
+Georgia, Segoe UI and Consolas, which ship everywhere, in place of Instrument
+Serif, Inter and JetBrains Mono. The slide transitions and the progress bar
+animation are static, since a PowerPoint file has no place for them.
+
 ## What it covers
 
 1. Title
